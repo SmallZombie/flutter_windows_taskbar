@@ -196,7 +196,25 @@ bool WindowsTaskbar::SetThumbnailToolbar(
 
 bool WindowsTaskbar::ResetThumbnailToolbar() {
   ResetLastError();
-  return WindowsTaskbar::SetThumbnailToolbar({});
+
+  if (!thumb_buttons_added_) {
+    return true;
+  }
+
+  THUMBBUTTON thumb_buttons[kMaxThumbButtonCount] = {};
+
+  for (uint32_t i = 0; i < kMaxThumbButtonCount; i++) {
+    thumb_buttons[i].dwMask = THB_FLAGS;
+    thumb_buttons[i].dwFlags = THBF_HIDDEN;
+    thumb_buttons[i].iId = kMinThumbButtonID + i;
+  }
+
+  auto result = taskbar_->ThumbBarUpdateButtons(
+      window_,
+      kMaxThumbButtonCount,
+      thumb_buttons);
+
+  return SUCCEEDED(result);
 }
 
 bool WindowsTaskbar::SetThumbnailTooltip(std::string tooltip) {
